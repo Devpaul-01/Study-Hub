@@ -1,0 +1,426 @@
+/**
+ * ============================================================================
+ * StudyHub API Client
+ * Handles all HTTP requests with automatic token management
+ * ============================================================================
+ */
+
+const API_BASE_URL = '/student'; // Base URL for all student endpoints
+
+/**
+ * API Client Class
+ */
+class APIClient {
+  constructor(baseURL) {
+    this.baseURL = baseURL;
+  }
+
+  /**
+   * Get authentication token from cookie
+   */
+  getToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'access_token') {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get default headers for requests
+   */
+  getHeaders(isJSON = true) {
+    const headers = {};
+    
+    // Add token if available
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Add Content-Type for JSON requests
+    if (isJSON) {
+      headers['Content-Type'] = 'application/json';
+    }
+    
+    return headers;
+  }
+
+  /**
+   * Handle API response
+   */
+  async handleResponse(response) {
+    const contentType = response.headers.get('content-type');
+    
+    // Parse JSON response
+    if (contentType && contentType.includes('application/json')) {
+      const data = await response.json();
+      
+      // Check for errors
+      if (!response.ok) {
+        throw new Error(data.message || 'Request failed');
+      }
+      
+      return data;
+    }
+    
+    // Handle non-JSON responses
+    if (!response.ok) {
+      throw new Error('Request failed');
+    }
+    
+    return response;
+  }
+
+  /**
+   * GET request
+   */
+  async get(endpoint, params = {}) {
+    // Build query string
+    const queryString = Object.keys(params).length > 0
+      ? '?' + new URLSearchParams(params).toString()
+      : '';
+    
+    const url = `${this.baseURL}${endpoint}${queryString}`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(),
+        credentials: 'same-origin' // Include cookies
+      });
+      
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('GET request failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * POST request
+   */
+  async post(endpoint, data = {}, isFormData = false) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    try {
+      const options = {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: this.getHeaders(!isFormData)
+      };
+      
+      // Handle FormData or JSON
+      if (isFormData) {
+        options.body = data;
+      } else {
+        options.body = JSON.stringify(data);
+      }
+      
+      const response = await fetch(url, options);
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('POST request failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * PATCH request (for updates)
+   */
+  async patch(endpoint, data = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: this.getHeaders(),
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      });
+      
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('PATCH request failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * DELETE request
+   */
+  async delete(endpoint) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    try {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: this.getHeaders(),
+        credentials: 'same-origin'
+      });
+      
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('DELETE request failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload file (multipart/form-data)
+   */
+  async uploadFile(endpoint, fileInput, additionalData = {}) {
+    const formData = new FormData();
+    
+    // Add file
+    if (fileInput.files && fileInput.files[0]) {
+      formData.append('file', fileInput.files[0]);
+    }
+    
+    // Add additional data
+    for (const [key, value] of Object.entries(additionalData)) {
+      formData.append(key, value);
+    }
+    
+    return await this.post(endpoint, formData, true);
+  }
+}
+
+// Create global API instance
+const api = new APIClient(API_BASE_URL);
+
+/**
+ * ============================================================================
+ * AUTHENTICATION HELPERS
+ * ============================================================================
+ */
+
+/**
+ * Check if user is authenticated
+ */
+function isAuthenticated() {
+  return api.getToken() !== null;
+}
+
+/**
+ * Redirect to login if not authenticated
+ */
+function requireAuth() {
+  if (!isAuthenticated()) {
+    window.location.href = '/student/login';
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Logout user
+ */
+async function logout() {
+  try {
+    await api.post('/logout');
+    window.location.href = '/student/login';
+  } catch (error) {
+    console.error('Logout failed:', error);
+    // Force logout even if request fails
+    document.cookie = 'access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    window.location.href = '/student/login';
+  }
+}
+
+/**
+ * ============================================================================
+ * UI HELPER FUNCTIONS
+ * ============================================================================
+ */
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info', duration = 3000) {
+  // Remove existing toasts
+  const existingToasts = document.querySelectorAll('.toast');
+  existingToasts.forEach(toast => toast.remove());
+  
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  
+  // Style the toast
+  Object.assign(toast.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '16px 24px',
+    borderRadius: '12px',
+    color: 'white',
+    fontWeight: '600',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+    zIndex: '9999',
+    animation: 'slideIn 0.3s ease',
+    maxWidth: '400px'
+  });
+  
+  // Set background color based on type
+  const colors = {
+    success: '#10B981',
+    error: '#EF4444',
+    warning: '#F59E0B',
+    info: '#3B82F6'
+  };
+  toast.style.backgroundColor = colors[type] || colors.info;
+  
+  // Add to page
+  document.body.appendChild(toast);
+  
+  // Remove after duration
+  setTimeout(() => {
+    toast.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+/**
+ * Show loading spinner on button
+ */
+function setButtonLoading(button, isLoading, originalText = '') {
+  if (isLoading) {
+    button.dataset.originalText = button.innerHTML;
+    button.innerHTML = '<span class="spinner"></span> Loading...';
+    button.disabled = true;
+  } else {
+    button.innerHTML = button.dataset.originalText || originalText;
+    button.disabled = false;
+  }
+}
+
+/**
+ * Format date/time
+ */
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+  
+  // Less than a minute
+  if (diff < 60000) {
+    return 'Just now';
+  }
+  
+  // Less than an hour
+  if (diff < 3600000) {
+    const minutes = Math.floor(diff / 60000);
+    return `${minutes}m ago`;
+  }
+  
+  // Less than a day
+  if (diff < 86400000) {
+    const hours = Math.floor(diff / 3600000);
+    return `${hours}h ago`;
+  }
+  
+  // Less than a week
+  if (diff < 604800000) {
+    const days = Math.floor(diff / 86400000);
+    return `${days}d ago`;
+  }
+  
+  // Format as date
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+  });
+}
+
+/**
+ * Debounce function (for search, etc.)
+ */
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Validate email
+ */
+function isValidEmail(email) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
+/**
+ * Validate username
+ */
+function isValidUsername(username) {
+  const regex = /^[a-z0-9]{3,20}$/;
+  return regex.test(username);
+}
+
+/**
+ * ============================================================================
+ * ERROR HANDLING
+ * ============================================================================
+ */
+
+/**
+ * Global error handler
+ */
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  showToast('An error occurred. Please try again.', 'error');
+});
+
+/**
+ * Handle API errors
+ */
+function handleAPIError(error) {
+  console.error('API Error:', error);
+  
+  if (error.message.includes('401') || error.message.includes('Authentication')) {
+    showToast('Session expired. Please login again.', 'error');
+    setTimeout(() => {
+      window.location.href = '/student/login';
+    }, 2000);
+  } else {
+    showToast(error.message || 'Something went wrong', 'error');
+  }
+}
+
+// Add CSS for toast animations
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);

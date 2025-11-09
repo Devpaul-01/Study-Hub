@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="StudyHub - Collaborative Learning Platform">
+    <title>{% block title %}StudyHub{% endblock %}</title>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Font: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar hidden" id="navbar">
+        <div class="navbar-container">
+            <!-- Logo -->
+            <div class="navbar-logo">
+                <a href="{{ url_for('student.student_dashboard.feed') }}">
+                    <span class="logo-icon">🎓</span>
+                    <span class="logo-text">StudyHub</span>
+                </a>
+            </div>
+            
+            <!-- Search Bar (Desktop) -->
+            <div class="navbar-search">
+                <input 
+                    type="text" 
+                    id="global-search" 
+                    placeholder="Search posts, users, threads..." 
+                    class="search-input"
+                >
+            </div>
+            
+            <!-- Right Side: Notifications, Profile -->
+            <div class="navbar-actions">
+                <!-- Notifications -->
+                <button class="navbar-icon-btn" id="notifications-btn">
+                    <span class="icon">🔔</span>
+                    <span class="notification-badge" id="notif-count">3</span>
+                </button>
+                
+                <!-- Messages -->
+                <a href="{{ url_for('student_messaging.inbox') }}" class="navbar-icon-btn">
+                    <span class="icon">💬</span>
+                    <span class="notification-badge" id="msg-count">2</span>
+                </a>
+                
+                <!-- Profile Dropdown -->
+                <div class="navbar-profile-dropdown">
+                    <button class="profile-btn" id="profile-dropdown-btn">
+                        <img 
+                            src="{{ current_user.avatar or '/static/assets/default-avatar.png' }}" 
+                            alt="Profile" 
+                            class="profile-avatar"
+                        >
+                        <span class="profile-name">{{ current_user.name }}</span>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div class="dropdown-menu hidden" id="profile-dropdown-menu">
+                        <a href="{{ url_for('student.student_profile.get_own_profile')}}" class="dropdown-item">👤 My Profile</a>
+                        <a href="{{ url_for('student_analytics.dashboard') }}" class="dropdown-item">📊 Analytics</a>
+                        <a href="{{ url_for('student_badges.my_badges') }}" class="dropdown-item">🏆 Badges</a>
+                        <hr class="dropdown-divider">
+                        <a href="#" onclick="logout(); return false;" class="dropdown-item text-danger">🚪 Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+
+        <!-- Left Sidebar -->
+        <aside class="sidebar hidden" id="sidebar">
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('student_dashboard.feed') }}" class="nav-item active">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Home</span>
+                </a>
+                
+                <a href="{{ url_for('student_posts.my_posts') }}" class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    <span class="nav-label">My Posts</span>
+                </a>
+                
+                <a href="{{ url_for('student_threads.my_threads') }}" class="nav-item">
+                    <span class="nav-icon">🧵</span>
+                    <span class="nav-label">Threads</span>
+                    <span class="nav-badge">3</span>
+                </a>
+                
+                <a href="{{ url_for('student_connections.list') }}" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-label">Connections</span>
+                </a>
+                
+                <a href="{{ url_for('student_study_buddy.discover') }}" class="nav-item">
+                    <span class="nav-icon">🤝</span>
+                    <span class="nav-label">Study Buddy</span>
+                </a>
+                
+                <a href="{{ url_for('student_search.advanced') }}" class="nav-item">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-label">Search</span>
+                </a>
+                
+                <hr class="sidebar-divider">
+                
+                <a href="{{ url_for('student_posts.bookmarked') }}" class="nav-item">
+                    <span class="nav-icon">🔖</span>
+                    <span class="nav-label">Bookmarks</span>
+                </a>
+                
+                <a href="{{ url_for('student_reputation.leaderboard') }}" class="nav-item">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-label">Leaderboard</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <main class="content-area"></main>
+        
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar hidden" id="right-sidebar">
+            {% block right_sidebar %}
+            <div class="widget">
+                <h3 class="widget-title">🔥 Trending Now</h3>
+                <div id="trending-posts">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+            
+            <div class="widget">
+                <h3 class="widget-title">💡 Suggested for You</h3>
+                <div id="suggested-users">
+                    <p class="text-muted">Loading...</p>
+                </div>
+            </div>
+            {% endblock %}
+        </aside>
+    </div>
+    
+    <!-- ✅ Scripts should always go right before </body> -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+
+    <script>
+        // ✅ Show sections if user is authenticated
+        if (isAuthenticated()) {
+            document.getElementById('navbar')?.classList.remove('hidden');
+            document.getElementById('sidebar')?.classList.remove('hidden');
+            document.getElementById('right-sidebar')?.classList.remove('hidden');
+        }
+        const notify = document.getElementById("notifications-btn");
+        notify.addEventListener("click", () => {
+          window.location.href = "/student/student_profile/details";
+        })
+        
+
+        // 🔽 Profile dropdown toggle
+        document.getElementById('profile-dropdown-btn')?.addEventListener('click', () => {
+            document.getElementById('profile-dropdown-menu')?.classList.toggle('hidden');
+        });
+
+        // ❌ Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.navbar-profile-dropdown')) {
+                document.getElementById('profile-dropdown-menu')?.classList.add('hidden');
+            }
+        });
+
+        // 🌐 Active nav item highlighting
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.getAttribute('href') === currentPath);
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/core/base.js') }}"></script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

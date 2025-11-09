@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Registration - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="auth-logo">🎉</div>
+                <h1 class="auth-title">Almost There!</h1>
+                <p class="auth-subtitle">Choose your username and password</p>
+            </div>
+            
+            <!-- Complete Registration Form -->
+            <form id="complete-form" class="auth-form">
+                <!-- Hidden Email Field -->
+                <input type="hidden" id="email" name="email" value="">
+                
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="username" class="form-label required">Username</label>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           class="form-input" 
+                           placeholder="johndoe"
+                           required
+                           pattern="[a-z0-9]{3,20}"
+                           autocomplete="off">
+                    <span class="form-help">
+                        3-20 characters, lowercase letters and numbers only
+                    </span>
+                    <div class="username-check hidden" id="username-check">
+                        <span id="check-icon"></span>
+                        <span id="check-text"></span>
+                    </div>
+                    <span class="form-error hidden" id="username_error"></span>
+                </div>
+                
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label required">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="form-input" 
+                           placeholder="Create a strong password"
+                           required
+                           minlength="6"
+                           autocomplete="new-password">
+                    <span class="form-help">Minimum 6 characters</span>
+                    
+                    <!-- Password Strength Indicator -->
+                    <div class="password-strength hidden" id="password-strength">
+                        <div class="password-strength-bar" id="strength-bar"></div>
+                    </div>
+                    <div class="password-strength-text hidden" id="strength-text"></div>
+                    <span class="form-error hidden" id="password_error"></span>
+                </div>
+                
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label required">Confirm Password</label>
+                    <input type="password" 
+                           id="confirm_password" 
+                           name="confirm_password" 
+                           class="form-input" 
+                           placeholder="Re-enter your password"
+                           required
+                           autocomplete="new-password">
+                    <span class="form-error hidden" id="confirm_password_error"></span>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    Complete Registration
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+        <script>
+        // Get email from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        
+        if (!email) {
+            showToast('Invalid access. Please start registration again.', 'error');
+            setTimeout(() => {
+                window.location.href = '/student/register';
+            }, 3000);
+        } else {
+            document.getElementById('email').value = email;
+        }
+        
+        // Username availability check (debounced)
+        let checkTimeout;
+        document.getElementById('username').addEventListener('input', (e) => {
+            const username = e.target.value.trim().toLowerCase();
+            const checkDiv = document.getElementById('username-check');
+            const checkIcon = document.getElementById('check-icon');
+            const checkText = document.getElementById('check-text');
+            
+            // Clear previous timeout
+            clearTimeout(checkTimeout);
+            
+            // Hide if empty
+            if (username.length < 3) {
+                checkDiv.classList.add('hidden');
+                return;
+            }
+            
+            // Validate format
+            if (!/^[a-z0-9]{3,20}$/.test(username)) {
+                checkDiv.className = 'username-check taken';
+                checkDiv.classList.remove('hidden');
+                checkIcon.textContent = '❌';
+                checkText.textContent = 'Invalid format';
+                return;
+            }
+            
+            // Show checking state
+            checkDiv.className = 'username-check checking';
+            checkDiv.classList.remove('hidden');
+            checkIcon.textContent = '⏳';
+            checkText.textContent = 'Checking...';
+            
+            // Check availability after 500ms delay
+            checkTimeout = setTimeout(async () => {
+                try {
+                    const response = await api.post('/check-username', { username });
+                    
+                    if (response.data.available) {
+                        checkDiv.className = 'username-check available';
+                        checkIcon.textContent = '✅';
+                        checkText.textContent = 'Available!';
+                    }
+                } catch (error) {
+                    checkDiv.className = 'username-check taken';
+                    checkIcon.textContent = '❌';
+                    checkText.textContent = 'Already taken';
+                }
+            }, 500);
+        });
+        
+        // Password strength checker
+        document.getElementById('password').addEventListener('input', (e) => {
+            const password = e.target.value;
+            const strengthDiv = document.getElementById('password-strength');
+            const strengthBar = document.getElementById('strength-bar');
+            const strengthText = document.getElementById('strength-text');
+            
+            if (!password) {
+                strengthDiv.classList.add('hidden');
+                strengthText.classList.add('hidden');
+                return;
+            }
+            
+            // Calculate strength
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // Show strength
+            strengthDiv.classList.remove('hidden');
+            strengthText.classList.remove('hidden');
+            
+            if (strength <= 2) {
+                strengthBar.className = 'password-strength-bar weak';
+                strengthText.className = 'password-strength-text weak';
+                strengthText.textContent = 'Weak password';
+            } else if (strength <= 3) {
+                strengthBar.className = 'password-strength-bar medium';
+                strengthText.className = 'password-strength-text medium';
+                strengthText.textContent = 'Medium strength';
+            } else {
+                strengthBar.className = 'password-strength-bar strong';
+                strengthText.className = 'password-strength-text strong';
+                strengthText.textContent = 'Strong password';
+            }
+        });
+        
+        // Form submission
+        document.getElementById('complete-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(el => {
+                el.classList.add('hidden');
+                el.textContent = '';
+            });
+            document.querySelectorAll('.form-input').forEach(el => {
+                el.classList.remove('error');
+            });
+            
+            // Get form data
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get("email"),
+                username: formData.get('username').trim().toLowerCase(),
+                password: formData.get('password'),
+                confirm_password: formData.get('confirm_password')
+            };
+            
+            // Validation
+            let hasError = false;
+            
+            if (!isValidUsername(data.username)) {
+                showFieldError('username', 'Username must be 3-20 lowercase letters/numbers');
+                hasError = true;
+            }
+            
+            if (data.password.length < 6) {
+                showFieldError('password', 'Password must be at least 6 characters');
+                hasError = true;
+            }
+            
+            if (data.password !== data.confirm_password) {
+                showFieldError('confirm_password', 'Passwords do not match');
+                hasError = true;
+            }
+            
+            if (hasError) return;
+            
+            // Submit to API
+            const submitBtn = document.getElementById('submit-btn');
+            setButtonLoading(submitBtn, true);
+            
+            try {
+                const response = await api.post("/complete-registration", data);
+                
+                if (response.status === 'success') {
+                    showToast('🎉 Registration complete! Welcome to StudyHub!', 'success', 3000);
+                    
+                    // Redirect to login
+                    setTimeout(() => {
+                        window.location.href = '/student/login';
+                    }, 2000);
+                }
+            } catch (error) {
+                setButtonLoading(submitBtn, false);
+                
+                if (error.message.includes('Username already taken')) {
+                    showFieldError('username', 'This username is already taken');
+                } else if (error.message.includes('Passwords do not match')) {
+                    showFieldError('confirm_password', 'Passwords do not match');
+                } else {
+                    showToast(error.message || 'Registration failed. Please try again.', 'error');
+                }
+            }
+        });
+        
+        // Helper function
+        function showFieldError(fieldName, message) {
+            const input = document.getElementById(fieldName);
+            const errorSpan = document.getElementById(fieldName + '_error');
+            
+            input.classList.add('error');
+            errorSpan.classList.remove('hidden');
+            errorSpan.textContent = message;
+        }
+    </script>
+
+</body>
+</html>

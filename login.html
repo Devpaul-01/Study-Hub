@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="auth-logo">🎓</div>
+                <h1 class="auth-title">Welcome Back!</h1>
+                <p class="auth-subtitle">Login to continue learning</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <!-- Username or Email -->
+                <div class="form-group">
+                    <label for="username_or_email" class="form-label required">Username or Email</label>
+                    <input type="text" 
+                           id="username_or_email" 
+                           name="username_or_email" 
+                           class="form-input" 
+                           placeholder="john or john@university.edu"
+                           required
+                           autocomplete="username">
+                    <span class="form-error hidden" id="username_error"></span>
+                </div>
+                
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password" class="form-label required">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="form-input" 
+                           placeholder="Enter your password"
+                           required
+                           autocomplete="current-password">
+                    <span class="form-error hidden" id="password_error"></span>
+                </div>
+                
+                <!-- Remember Me & Forgot Password -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                    <div class="checkbox-group" style="margin: 0;">
+                        <input type="checkbox" id="remember_me" name="remember_me">
+                        <label for="remember_me">Remember me</label>
+                    </div>
+                    <a href="/student/forgot-password" class="text-primary" style="font-size: 0.9rem;">
+                        Forgot password?
+                    </a>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    Login
+                </button>
+            </form>
+            
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span>OR</span>
+            </div>
+            
+            <!-- Register Link -->
+            <div class="auth-footer">
+                Don't have an account? <a href="{{ url_for('student.student_auth.login') }}">Create one now</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+<script>
+    // Check if already logged in
+    if (isAuthenticated()) {
+        window.location.href = '/student/posts/homepage';
+    }
+    
+    // Form submission
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Clear previous errors
+        document.querySelectorAll('.form-error').forEach(el => {
+            el.classList.add('hidden');
+            el.textContent = '';
+        });
+        document.querySelectorAll('.form-input').forEach(el => {
+            el.classList.remove('error');
+        });
+        
+        // Get form data
+        const formData = new FormData(e.target);
+        const data = {
+            username_or_email: formData.get('username_or_email').trim().toLowerCase(),
+            password: formData.get('password')
+        };
+        
+        // Basic validation
+        if (!data.username_or_email) {
+            showFieldError('username', 'Username or email is required');
+            return;
+        }
+        
+        if (!data.password) {
+            showFieldError('password', 'Password is required');
+            return;
+        }
+        
+        // Submit to API
+        const submitBtn = document.getElementById('submit-btn');
+        setButtonLoading(submitBtn, true);
+        
+        try {
+            // ✅ FIXED: Send as JSON, not form data
+            const response = await api.post("/login", data, false);
+            
+            if (response.status === 'success') {
+                showToast('Welcome back! Redirecting...', 'success');
+                
+                // ✅ FIXED: Correct redirect path
+                setTimeout(() => {
+                    window.location.href = response.redirect || '/student/profile/homepage';
+                }, 1000);
+            }
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            
+            // Handle specific error messages
+            console.error('Login error:', error);
+            const errorMsg = error.message || 'Login failed. Please try again.';
+            
+            if (errorMsg.includes('Invalid credentials')) {
+                showToast('Invalid username/email or password', 'error');
+            } else if (errorMsg.includes('verify your email')) {
+                showToast('Please verify your email first. Check your inbox.', 'warning', 5000);
+            } else if (errorMsg.includes('complete your registration')) {
+                showToast('Please complete your registration', 'warning');
+            } else {
+                showToast(errorMsg, 'error');
+            }
+        }
+    });
+    
+    // Helper function to show field errors
+    function showFieldError(fieldName, message) {
+        const input = document.getElementById(fieldName === 'username' ? 'username_or_email' : fieldName);
+        const errorSpan = document.getElementById(fieldName + '_error');
+        
+        if (input) input.classList.add('error');
+        if (errorSpan) {
+            errorSpan.classList.remove('hidden');
+            errorSpan.textContent = message;
+        }
+    }
+    
+    // Auto-focus on first input
+    document.getElementById('username_or_email').focus();
+</script>

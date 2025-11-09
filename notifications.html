@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - StudyHub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-500: #6B7280;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--gray-100);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: var(--gray-200);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .tabs-container {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            animation: slideUp 0.5s ease 0.1s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 0.875rem 1.75rem;
+            background: var(--gray-50);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab:hover {
+            background: var(--gray-100);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab-badge {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .tab.active .tab-badge {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .notif-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-left: 4px solid transparent;
+            position: relative;
+            cursor: pointer;
+            animation: fadeIn 0.4s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notif-card.unread {
+            background: linear-gradient(to right, #f0f9ff, white);
+            border-left-color: var(--info);
+        }
+
+        .notif-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .notif-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-right: 1rem;
+        }
+
+        .notif-icon.badge { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+        .notif-icon.post { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+        .notif-icon.connection { background: linear-gradient(135deg, #FCE7F3, #FBCFE8); }
+        .notif-icon.thread { background: linear-gradient(135deg, #E9D5FF, #D8B4FE); }
+        .notif-icon.message { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+
+        .notif-content-wrapper {
+            display: flex;
+            flex: 1;
+        }
+
+        .notif-content {
+            flex: 1;
+        }
+
+        .notif-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.375rem;
+        }
+
+        .notif-body {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            line-height: 1.5;
+        }
+
+        .notif-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .notif-time {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .notif-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 1rem;
+        }
+
+        .notif-action-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.25rem;
+        }
+
+        .notif-action-btn:hover {
+            background: var(--gray-100);
+        }
+
+        .notif-action-btn.delete:hover {
+            background: #FEE2E2;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+        }
+
+        .empty-text {
+            color: var(--gray-500);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .page-title { font-size: 2rem; }
+            .tabs { flex-direction: column; }
+            .notif-card { padding: 1rem; }
+            .notif-content-wrapper { flex-direction: column; }
+            .notif-actions { margin-left: 0; margin-top: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <h1 class="page-title">
+                    <span>🔔</span>
+                    Notifications
+                </h1>
+                <div class="header-actions">
+                    <button class="action-btn" onclick="markAllRead()">
+                        ✓ Mark All Read
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab active" data-tab="all">
+                    <span>📬</span>
+                    All
+                    <span class="tab-badge" id="badge-all">0</span>
+                </button>
+                <button class="tab" data-tab="posts">
+                    <span>📝</span>
+                    Posts
+                    <span class="tab-badge" id="badge-posts">0</span>
+                </button>
+                <button class="tab" data-tab="badges">
+                    <span>🏆</span>
+                    Badges
+                    <span class="tab-badge" id="badge-badges">0</span>
+                </button>
+                <button class="tab" data-tab="connections">
+                    <span>👥</span>
+                    Connections
+                    <span class="tab-badge" id="badge-connections">0</span>
+                </button>
+                <button class="tab" data-tab="threads">
+                    <span>🧵</span>
+                    Threads
+                    <span class="tab-badge" id="badge-threads">0</span>
+                </button>
+                <button class="tab" data-tab="messages">
+                    <span>💬</span>
+                    Messages
+                    <span class="tab-badge" id="badge-messages">0</span>
+                </button>
+                <button class="tab" data-tab="mentions">
+                    <span>@</span>
+                    Mentions
+                    <span class="tab-badge" id="badge-mentions">0</span>
+                </button>
+                <button class="tab" data-tab="study_buddy">
+                    <span>🤝</span>
+                    Study Buddy
+                    <span class="tab-badge" id="badge-study_buddy">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notifications-container" class="notifications-list">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="color: white; margin-top: 1rem; font-weight: 600;">Loading notifications...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/core/api.js"></script>
+    <script src="/static/js/core/utils.js"></script>
+    <script>
+        let allNotifications = {};
+        let currentTab = 'all';
+
+        const iconMap = {
+            posts: '📝',
+            badges: '🏆',
+            connections: '👥',
+            threads: '🧵',
+            messages: '💬',
+            mentions: '@',
+            study_buddy: '🤝'
+        };
+
+        const categoryMap = {
+            posts: 'post',
+            badges: 'badge',
+            connections: 'connection',
+            threads: 'thread',
+            messages: 'message',
+            mentions: 'mention',
+            study_buddy: 'connection'
+        };
+
+        async function init() {
+            await loadNotifications();
+            setupTabs();
+            setupAutoRefresh();
+        }
+
+        async function loadNotifications() {
+            try {
+                const res = await api.get('/profile/notifications/grouped');
+                allNotifications = res.data.grouped;
+                
+                updateBadges();
+                renderNotifications();
+            } catch (error) {
+                console.error('Load notifications error:', error);
+                showError();
+            }
+        }
+
+        function updateBadges() {
+            let totalUnread = 0;
+            
+            Object.keys(allNotifications).forEach(category => {
+                const unreadCount = allNotifications[category].filter(n => !n.is_read).length;
+                const badge = document.getElementById(`badge-${category}`);
+                if (badge) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+                }
+                totalUnread += unreadCount;
+            });
+
+            document.getElementById('badge-all').textContent = totalUnread;
+            document.getElementById('badge-all').style.display = totalUnread > 0 ? 'inline-block' : 'none';
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notifications-container');
+            let notifications = getFilteredNotifications();
+
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎉</div>
+                        <div class="empty-title">All caught up!</div>
+                        <div class="empty-text">No notifications in this category</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifications.map((notif, i) => `
+                <div class="notif-card ${!notif.is_read ? 'unread' : ''}" 
+                     style="animation-delay: ${i * 0.05}s"
+                     onclick="handleNotificationClick(${notif.id}, '${notif.related_type}', ${notif.related_id})">
+                    <div class="notif-content-wrapper">
+                        <div class="notif-icon ${getCategoryFromType(notif.type)}">
+                            ${getIconForType(notif.type)}
+                        </div>
+                        <div class="notif-content">
+                            <div class="notif-title">${notif.title}</div>
+                            <div class="notif-body">${notif.body}</div>
+                            <div class="notif-meta">
+                                <div class="notif-time">
+                                    <span>🕐</span>
+                                    <span>${formatDate(notif.created_at)}</span>
+                                </div>
+                                ${!notif.is_read ? '<span style="color: var(--info); font-weight: 700;">● New</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="notif-actions">
+                            ${!notif.is_read ? `
+                                <button class="notif-action-btn" onclick="event.stopPropagation(); markAsRead(${notif.id})" title="Mark as read">
+                                    ✓
+                                </button>
+                            ` : ''}
+                            <button class="notif-action-btn delete" onclick="event.stopPropagation(); deleteNotification(${notif.id})" title="Delete">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getFilteredNotifications() {
+            if (currentTab === 'all') {
+                return Object.values(allNotifications)
+                    .flat()
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+            return allNotifications[currentTab] || [];
+        }
+
+        function getCategoryFromType(type) {
+            if (type.includes('badge') || type.includes('reputation')) return 'badge';
+            if (type.includes('connection')) return 'connection';
+            if (type.includes('thread')) return 'thread';
+            if (type === 'message') return 'message';
+            if (type === 'mention') return 'mention';
+            if (type.includes('study_buddy')) return 'connection';
+            return 'post';
+        }
+
+        function getIconForType(type) {
+            const category = getCategoryFromType(type);
+            return iconMap[Object.keys(categoryMap).find(k => categoryMap[k] === category)] || '📬';
+        }
+
+        function setupTabs() {
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTab = btn.dataset.tab;
+                    renderNotifications();
+                });
+            });
+        }
+
+        function setupAutoRefresh() {
+            setInterval(() => {
+                loadNotifications();
+            }, 30000); // Refresh every 30 seconds
+        }
+
+        async function handleNotificationClick(notifId, relatedType, relatedId) {
+            await markAsRead(notifId);
+            
+            // Navigate based on related_type
+            const routes = {
+                'post': `/student/posts/${relatedId}`,
+                'comment': `/student/posts/${relatedId}`,
+                'thread': `/student/threads/${relatedId}`,
+                'user': `/student/profile/${relatedId}`,
+                'badge': '/student/badges',
+                'message': '/student/messages'
+            };
+
+            if (routes[relatedType]) {
+                window.location.href = routes[relatedType];
+            }
+        }
+
+        async function markAsRead(notifId) {
+            try {
+                await api.post(`/profile/notifications/${notifId}/read`);
+                
+                // Update local state
+                Object.values(allNotifications).forEach(category => {
+                    const notif = category.find(n => n.id === notifId);
+                    if (notif) notif.is_read = true;
+                });
+
+                updateBadges();
+                renderNotifications();
+            } catch (error) {
+                console.error('Mark read error:', error);
+            }
+        }
+
+        async function markAllRead() {
+            try {
+                await api.post('/profile/notifications/read-all');
+                
+                // Update local state
+                Object.values(allNotifications).forEach(category => {
+                    category.forEach(n => n.is_read = true);
+                });
+
+                updateBadges();
+                renderNotifications();
+                showToast('All notifications marked as read', 'success');
+            } catch (error) {
+                showToast('Failed to mark all as read', 'error');
+            }
+        }
+
+        async function deleteNotification(notifId) {
+            try {
+                await api.delete(`/profile/notifications/${notifId}`);
+                
+                // Update local state
+                Object.keys(allNotifications).forEach(category => {
+                    allNotifications[category] = allNotifications[category].filter(n => n.id !== notifId);
+                });
+
+                updateBadges();
+                renderNotifications();
+                showToast('Notification deleted', 'success');
+            } catch (error) {
+                showToast('Failed to delete notification', 'error');
+            }
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function showError() {
+            document.getElementById('notifications-container').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <div class="empty-title">Failed to load notifications</div>
+                    <div class="empty-text">Please refresh the page</div>
+                </div>
+            `;
+        }
+
+        init();
+    </script>
+</body>
+</html>
+       

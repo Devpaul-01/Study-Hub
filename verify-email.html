@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <div class="verification-page" id="verification-content">
+                <!-- Loading State -->
+                <div class="verification-icon">⏳</div>
+                <h2 class="auth-title">Verifying Your Email...</h2>
+                <p class="verification-message">
+                    Please wait while we verify your email address.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script>
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = window.location.pathname.split('/verify-email/')[1];
+        
+        // Auto-verify on page load
+        async function verifyEmail() {
+            if (!token) {
+                showError('Invalid verification link');
+                return;
+            }
+            
+            try {
+                // ✅ FIXED: Call the correct API endpoint
+                const response = await fetch(`/student/api/verify-email/${token}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showSuccess(data);
+                } else {
+                    showError(data.message || 'Verification failed');
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                showError('Verification failed. Please try again.');
+            }
+        }
+        
+        // Show success state
+        function showSuccess(data) {
+            const content = document.getElementById('verification-content');
+            
+            if (data.data.already_verified) {
+                content.innerHTML = `
+                    <div class="verification-icon success">✅</div>
+                    <h2 class="auth-title" style="color: var(--success-green);">Already Verified!</h2>
+                    <p class="verification-message">
+                        Your email is already verified. You can login now.
+                    </p>
+                    <a href="/student/login" class="btn btn-primary btn-lg">
+                        Go to Login
+                    </a>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="verification-icon success">✅</div>
+                    <h2 class="auth-title" style="color: var(--success-green);">Email Verified!</h2>
+                    <p class="verification-message">
+                        Great! Your email has been verified successfully.<br>
+                        Let's complete your registration.
+                    </p>
+                    <button class="btn btn-primary btn-lg" onclick="continueRegistration()">
+                        Continue to Setup
+                    </button>
+                `;
+                
+                // ✅ FIXED: Store email for next page
+                sessionStorage.setItem('verified_email', data.data.email);
+            }
+        }
+        
+        // Show error state
+        function showError(message) {
+            const content = document.getElementById('verification-content');
+            content.innerHTML = `
+                <div class="verification-icon">❌</div>
+                <h2 class="auth-title" style="color: var(--error-red);">Verification Failed</h2>
+                <p class="verification-message">
+                    ${message || 'The verification link is invalid or has expired.'}
+                </p>
+                <a href="/student/register" class="btn btn-primary btn-lg">
+                    Register Again
+                </a>
+                <p style="margin-top: var(--spacing-lg); font-size: 0.9rem; color: var(--gray-500);">
+                    Already have an account? <a href="/student/login">Login here</a>
+                </p>
+            `;
+        }
+        
+        // ✅ FIXED: Continue to complete registration with email
+        function continueRegistration() {
+            const email = sessionStorage.getItem('verified_email');
+            
+            if (email) {
+                window.location.href = `/student/complete-registration?email=${encodeURIComponent(email)}`;
+            } else {
+                showError("Email not found. Please try again.");
+            }
+        }
+        
+        // Start verification
+        verifyEmail();
+    </script>
+</body>
+</html>

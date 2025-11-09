@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - StudyHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-container">
+            <!-- Header -->
+            <div class="auth-header">
+                <div class="auth-logo">🎓</div>
+                <h1 class="auth-title">Join StudyHub</h1>
+                <p class="auth-subtitle">Start your collaborative learning journey</p>
+            </div>
+            
+            <!-- Registration Form -->
+            <form id="register-form" class="auth-form">
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label for="full_name" class="form-label required">Full Name</label>
+                    <input type="text" 
+                           id="full_name" 
+                           name="full_name" 
+                           class="form-input" 
+                           placeholder="John Doe"
+                           required>
+                    <span class="form-error hidden" id="full_name_error"></span>
+                </div>
+                
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email" class="form-label required">Email Address</label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           class="form-input" 
+                           placeholder="john@university.edu"
+                           required>
+                    <span class="form-error hidden" id="email_error"></span>
+                    <span class="form-help">We'll send a verification link to this email</span>
+                </div>
+                
+                <!-- Department -->
+                <div class="form-group">
+                    <label for="department" class="form-label required">Department</label>
+                    <select id="department" name="department" class="form-select" required>
+                        <option value="">Select your department</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                    <span class="form-error hidden" id="department_error"></span>
+                </div>
+                
+                <!-- Class Level -->
+                <div class="form-group">
+                    <label for="class_level" class="form-label required">Class Level</label>
+                    <select id="class_level" name="class_level" class="form-select" required>
+                        <option value="">Select your class</option>
+                        <option value="100 Level">100 Level</option>
+                        <option value="200 Level">200 Level</option>
+                        <option value="300 Level">300 Level</option>
+                        <option value="400 Level">400 Level</option>
+                        <option value="500 Level">500 Level</option>
+                    </select>
+                    <span class="form-error hidden" id="class_level_error"></span>
+                </div>
+                
+                <!-- Terms Agreement -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agree_terms" name="agree_terms" required>
+                    <label for="agree_terms">
+                        I agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>
+                    </label>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    Create Account
+                </button>
+            </form>
+            
+            <!-- Footer -->
+            <div class="auth-footer">
+                Already have an account? <a href="{{ url_for('student.student_auth.login') }}">Login here</a>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  fillDepartment();
+
+  function fillDepartment() {
+    const select = document.getElementById("department");
+    const DEPARTMENTS = [
+      "Architecture", "Computer Science", "Engineering (Civil)", "Engineering (Electrical)",
+      "Engineering (Mechanical)", "Medicine & Surgery", "Pharmacy", "Nursing", "Law",
+      "Accounting", "Business Administration", "Economics", "Mass Communication", "English",
+      "History", "Biology", "Chemistry", "Physics", "Mathematics", "Statistics",
+      "Psychology", "Sociology", "Political Science", "Agricultural Science",
+      "Fine Arts", "Music", "Theatre Arts"
+    ];
+
+    DEPARTMENTS.forEach(department => {
+      const option = document.createElement("option");
+      option.textContent = department;
+      option.value = department;
+      select.appendChild(option);
+    });
+  }
+
+  // Handle form submit
+  const form = document.getElementById("register-form");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    // Clear previous errors
+    document.querySelectorAll('.form-error').forEach(el => {
+        el.classList.add('hidden');
+        el.textContent = '';
+    });
+    
+    const formData = new FormData(e.target);
+    
+    // Convert to plain object
+    const data = {
+      full_name: formData.get("full_name"),
+      email: formData.get("email"),
+      department: formData.get("department"),
+      class_level: formData.get("class_level"),
+      agree_terms: formData.get("agree_terms")
+    };
+    
+    if (validateForm(data)) {
+      await Register(data);
+    }
+  });
+
+  function validateForm(data) {
+    let hasError = false;
+
+    if (!data.full_name) {
+      showFieldError("full_name", "Kindly enter your full name");
+      hasError = true;
+    }
+
+    if (!data.department) {
+      showFieldError("department", "Kindly select a department");
+      hasError = true;
+    }
+
+    if (!data.class_level) {
+      showFieldError("class_level", "Kindly select your class level");
+      hasError = true;
+    }
+
+    if (!data.email) {
+      showFieldError("email", "Kindly enter your email");
+      hasError = true;
+    }
+
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (data.email && !pattern.test(data.email)) {
+      showFieldError("email", "Kindly input a valid email");
+      hasError = true;
+    }
+
+    if (!data.agree_terms) {
+      showToast("Kindly agree to our terms to continue", "error");
+      hasError = true;
+    }
+
+    return !hasError;
+  }
+
+  function showFieldError(fieldId, message) {
+    const element = document.getElementById(fieldId);
+    const span = element.nextElementSibling;
+    if (span && span.classList.contains('form-error')) {
+      span.textContent = message;
+      span.classList.remove("hidden");
+    }
+  }
+
+  async function Register(data) {
+    const btn = document.getElementById("submit-btn");
+    
+    try {
+      setButtonLoading(btn, true);
+
+      // ✅ FIXED: Proper API call with JSON data
+      const response = await api.post("/register", data, false);
+
+      if (response.status === "success") {
+        showToast(response.message, "success");
+        form.reset();
+        
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          window.location.href = "/student/login";
+        }, 2000);
+      } else {
+        showToast(response.message || "Registration failed", "error");
+      }
+
+    } catch (error) {
+      console.error('Registration error:', error);
+      showToast(error.message || "Registration failed. Please try again.", "error");
+    } finally {
+      setButtonLoading(btn, false);
+    }
+  }
+});
+</script>

@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - StudyHub</title>
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-blue-light: #60A5FA;
+            --success-green: #10B981;
+            --warning-orange: #F59E0B;
+            --error-red: #EF4444;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-2xl: 48px;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .profile-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-lg);
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+            z-index: 0;
+        }
+
+        .profile-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar-section {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .profile-avatar-wrapper {
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 5px solid white;
+            box-shadow: var(--shadow-lg);
+            object-fit: cover;
+            background: var(--gray-200);
+        }
+
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: white;
+            border: 3px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform var(--transition-fast);
+        }
+
+        .avatar-upload-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-info {
+            flex: 1;
+            padding-top: 60px;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .profile-username {
+            font-size: 1.1rem;
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-lg);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+            margin-top: var(--spacing-xs);
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* Tabs */
+        .profile-tabs {
+            display: flex;
+            gap: var(--spacing-sm);
+            border-bottom: 2px solid var(--gray-200);
+            margin-bottom: var(--spacing-lg);
+            background: white;
+            padding: var(--spacing-md) var(--spacing-lg) 0;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: 1rem;
+        }
+
+        .tab:hover {
+            color: var(--gray-700);
+        }
+
+        .tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Profile Grid */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--spacing-lg);
+        }
+
+        .profile-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* Bio Section */
+        .bio-text {
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-icon {
+            font-size: 1.25rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            display: block;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        /* Skills & Tags */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
+        .tag {
+            padding: 8px 16px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .tag-remove {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            transition: opacity var(--transition-fast);
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        .add-tag-form {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .form-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            transition: border-color var(--transition-fast);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        /* Badges */
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-md);
+        }
+
+        .badge-item {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+        }
+
+        .badge-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-blue);
+        }
+
+        .badge-icon {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .badge-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .badge-date {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+
+        /* Activity Heatmap */
+        .heatmap-container {
+            overflow-x: auto;
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(52, 1fr);
+            gap: 4px;
+            margin-top: var(--spacing-md);
+        }
+
+        .heatmap-cell {
+            width: 14px;
+            height: 14px;
+            background: var(--gray-200);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.2);
+        }
+
+        .heatmap-cell[data-level="1"] {
+            background: #9BE9A8;
+        }
+
+        .heatmap-cell[data-level="2"] {
+            background: #40C463;
+        }
+
+        .heatmap-cell[data-level="3"] {
+            background: #30A14E;
+        }
+
+        .heatmap-cell[data-level="4"] {
+            background: #216E39;
+        }
+
+        /* Posts Grid */
+        .posts-grid {
+            display: grid;
+            gap: var(--spacing-md);
+        }
+
+        .post-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .post-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .post-type-badge {
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .post-type-question {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .post-type-discussion {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .post-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .post-excerpt {
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .post-meta {
+            display: flex;
+            gap: var(--spacing-lg);
+            color: var(--gray-500);
+            font-size: 0.9rem;
+        }
+
+        .post-meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-2xl);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+            opacity: 0.3;
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .empty-state-message {
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        /* Loading State */
+        .skeleton {
+            background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+            border-radius: var(--radius-sm);
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-avatar-section {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-stats {
+                justify-content: center;
+            }
+
+            .badges-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .profile-tabs {
+                overflow-x: auto;
+            }
+
+            .profile-stats {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .badges-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-header-content">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-wrapper">
+                        <img src="https://via.placeholder.com/140" alt="Profile" class="profile-avatar" id="profileAvatar">
+                        <button class="avatar-upload-btn" onclick="document.getElementById('avatarInput').click()" title="Change avatar">
+                            📷
+                        </button>
+                        <button class="avatar-remove" id="avatar-remove">Remove</button>
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="profile-info">
+                        <h1 class="profile-name" id="profileName">Loading...</h1>
+                        <p class="profile-username" id="profileUsername">@loading</p>
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-value" id="statPosts">0</span>
+                                <span class="stat-label">Posts</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="statReputation">0</span>
+                                <span class="stat-label">Reputation</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="statStreak">0</span>
+                                <span class="stat-label">Day Streak</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="statHelpful">0</span>
+                                <span class="stat-label">Helpful</span>
+                            </div>
+                        </div>
+                        <div class="profile-actions">
+                            <button class="btn btn-primary" onclick="openEditModal()">
+                                ✏️ Edit Profile
+                            </button>
+                            <button class="btn btn-secondary" onclick="window.location.href='/student/analytics/overview'">
+                                📊 View Analytics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="profile-tabs">
+            <button class="tab active" onclick="switchTab('overview')">📋 Overview</button>
+            <button class="tab" onclick="switchTab('posts')">📝 Posts</button>
+            <button class="tab" onclick="switchTab('activity')">📈 Activity</button>
+            <button class="tab" onclick="switchTab('badges')">🏆 Badges</button>
+            <button class="tab" onclick="switchTab('threads')">🧵 Threads</button>
+            <button class="tab" onclick="switchTab('connections')">Connetions</button>
+            <button class="tab" onclick="switchTab('studybuddy')">StudyBuddies</button>
+            <button class="tab" onclick="switchTab('weeklysummary')">Weekly Summary</button>
+        </div>
+
+        <!-- Tab Content: Overview -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="profile-grid">
+                <!-- Left Column -->
+                <div>
+                    <div class="profile-section">
+                        <h2 class="section-title">ℹ️ About</h2>
+                        <p class="bio-text" id="profileBio">Loading bio...</p>
+                        
+                        <ul class="info-list">
+                            <li class="info-item">
+                                <div class="info-icon">🏫</div>
+                                <div class="info-content">
+                                    <span class="info-label">Department</span>
+                        <span class="info-value" id="infoDepartment">-</span>
+                                </div>
+                            </li>
+                            <li class="info-item">
+                                <div class="info-icon">📚</div>
+                                <div class="info-content">
+                                    <span class="info-label">Class Level</span>
+                                    <span class="info-value" id="infoClassLevel">-</span>
+                                </div>
+                            </li>
+                            <li class="info-item">
+                                <div class="info-icon">📅</div>
+                                <div class="info-content">
+                                    <span class="info-label">Joined</span>
+                                    <span class="info-value" id="infoJoined">-</span>
+                                </div>
+                            </li>
+                            <li class="info-item">
+                                <div class="info-icon">⭐</div>
+                                <div class="info-content">
+                                    <span class="info-label">Reputation Level</span>
+                                    <span class="info-value" id="infoRepLevel">-</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="profile-section" style="margin-top: var(--spacing-lg);">
+                        <h2 class="section-title">💪 Skills</h2>
+                        <div class="tags-container" id="skillsContainer">
+                            <span class="skeleton" style="width: 80px; height: 32px;"></span>
+                            <span class="skeleton" style="width: 100px; height: 32px;"></span>
+                        </div>
+                        <div class="add-tag-form">
+                            <input type="text" class="form-input" id="skillInput" placeholder="Add a skill...">
+                            <button class="btn btn-primary" onclick="addSkill()">Add</button>
+                        </div>
+                    </div>
+
+                    <div class="profile-section" style="margin-top: var(--spacing-lg);">
+                        <h2 class="section-title">🎯 Learning Goals</h2>
+                        <div id="goalsContainer">
+                            <p style="color: var(--gray-500);">Loading goals...</p>
+                        </div>
+                        <div class="add-tag-form">
+                            <input type="text" class="form-input" id="goalInput" placeholder="Add a learning goal...">
+                            <button class="btn btn-primary" onclick="addGoal()">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="profile-section">
+                        <h2 class="section-title">🎖️ Featured Badges</h2>
+                        <div class="badges-grid" id="featuredBadges">
+                            <div class="skeleton" style="height: 120px;"></div>
+                            <div class="skeleton" style="height: 120px;"></div>
+                            <div class="skeleton" style="height: 120px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section" style="margin-top: var(--spacing-lg);">
+                        <h2 class="section-title">📝 Recent Posts</h2>
+                        <div class="posts-grid" id="recentPosts">
+                            <div class="skeleton" style="height: 100px;"></div>
+                            <div class="skeleton" style="height: 100px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section" style="margin-top: var(--spacing-lg);">
+                        <h2 class="section-title">🧵 Active Threads</h2>
+                        <div id="activeThreads">
+                            <div class="skeleton" style="height: 60px; margin-bottom: 12px;"></div>
+                            <div class="skeleton" style="height: 60px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Posts -->
+        <div id="tab-connections" class="tab-content">
+            <div class="profile-section">
+                <h2 class="section-title">🏆 All Connections</h2>
+                <div class="connections-grid" id="allConnections">
+                    <div class="skeleton" style="height: 120px;"></div>
+                    <div class="skeleton" style="height: 120px;"></div>
+                    <div class="skeleton" style="height: 120px;"></div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-studybuddies" class="tab-content">
+            <div class="profile-section">
+                <h2 class="section-title">🏆 Study Buddies</h2>
+                <div class="studybuddies-grid" id="allstudyBuddies">
+                    <div class="skeleton" style="height: 120px;"></div>
+                    <div class="skeleton" style="height: 120px;"></div>
+                    <div class="skeleton" style="height: 120px;"></div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-posts" class="tab-content">
+            <div class="profile-section">
+                <h2 class="section-title">📝 All Posts</h2>
+                <div class="posts-grid" id="allPosts">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3 class="empty-state-title">Loading Posts...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Activity -->
+        <div id="tab-activity" class="tab-content">
+            <div class="profile-section">
+                <h2 class="section-title">📈 Activity Heatmap</h2>
+                <p style="color: var(--gray-500); margin-bottom: var(--spacing-lg);">
+                    Your activity over the last 90 days
+                </p>
+                <div class="heatmap-container">
+                    <div class="heatmap" id="activityHeatmap"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Badges -->
+        <div id="tab-badges" class="tab-content">
+            <div class="profile-section">
+                <h2 class="section-title">🏆 All Badges</h2>
+                <div class="badges-grid" id="allBadges">
+                    <div class="skeleton" style="height: 120px;"></div>
+                    <div class="skeleton" style="height: 120px;"></div>
+                    <div class="skeleton" style="height: 120px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Threads -->
+        <div id="tab-threads" class="tab-content">
+            <div class="profile-section">
+                <h2 class="section-title">🧵 My Threads</h2>
+                <div id="allThreads">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🧵</div>
+                        <h3 class="empty-state-title">Loading Threads...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Note: This assumes api.js and utils.js are already loaded via base.html
+
+        let profileData = null;
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load tab-specific data
+            loadTabData(tabName);
+        }
+  
+        // Load Profile Data
+        async function loadProfile() {
+            try {
+                const response = await api.get('/profile');
+                profileData = response.data;
+                loadFeaturedPost(profileData.featured_post);
+                loadPinnedPosts(profileData.pinned_posts);
+
+                // Update header
+                document.getElementById('profileName').textContent = profileData.user.name;
+                document.getElementById('profileUsername').textContent = `@${profileData.user.username}`;
+                document.getElementById('profileAvatar').src = profileData.user.avatar || 'https://via.placeholder.com/140';
+                
+                // Update stats
+                document.getElementById('statPosts').textContent = profileData.stats.total_posts;
+                document.getElementById('statReputation').textContent = profileData.user.reputation;
+                document.getElementById('statStreak').textContent = profileData.user.login_streak;
+                document.getElementById('statHelpful').textContent = profileData.stats.total_helpful;
+
+                // Update bio
+                document.getElementById('profileBio').textContent = profileData.user.bio || 'No bio added yet.';
+
+                // Update info
+                document.getElementById('infoDepartment').textContent = profileData.user.department || '-';
+                document.getElementById('infoClassLevel').textContent = profileData.user.class_level || '-';
+                document.getElementById('infoJoined').textContent = formatDate(profileData.user.joined_at);
+                document.getElementById('infoRepLevel').textContent = profileData.user.reputation_level;
+
+                // Load featured badges
+                loadFeaturedBadges(profileData.badges);
+
+                // Load recent posts
+                loadRecentPosts(profileData.recent_posts);
+
+                // Load active threads
+                loadActiveThreads(profileData.active_threads);
+
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+                showToast('Failed to load profile', 'error');
+            }
+        }
+
+        // Load Skills
+        function loadSkills(skills) {
+            const container = document.getElementById('skillsContainer');
+            if (!skills || skills.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-500);">No skills added yet.</p>';
+                return;
+            }
+
+            container.innerHTML = skills.map(skill => `
+                <span class="tag">
+                    ${skill}
+                    <button class="tag-remove" onclick="removeSkill('${skill}')">×</button>
+                </span>
+            `).join('');
+        }
+
+        // Add Skill
+        async function addSkill() {
+            const input = document.getElementById('skillInput');
+            const skill = input.value.trim();
+
+            if (!skill) {
+                showToast('Please enter a skill', 'warning');
+                return;
+            }
+
+            try {
+                await api.post('/profile/skills', { skill });
+                input.value = '';
+                showToast('Skill added!', 'success');
+                loadProfile(); // Reload profile
+            } catch (error) {
+                showToast(error.message || 'Failed to add skill', 'error');
+            }
+        }
+
+        // Remove Skill
+        async function removeSkill(skill) {
+            try {
+                await api.delete(`/profile/skills/${encodeURIComponent(skill)}`);
+                showToast('Skill removed', 'success');
+                loadProfile();
+            } catch (error) {
+                showToast('Failed to remove skill', 'error');
+            }
+        }
+
+        // Load Goals
+        function loadGoals(goals) {
+            const container = document.getElementById('goalsContainer');
+            if (!goals || goals.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-500);">No learning goals set yet.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <ul style="list-style: none;">
+                    ${goals.map((goal, index) => `
+                        <li class="info-item">
+                            <div class="info-icon">🎯</div>
+                            <div class="info-content" style="flex: 1;">
+                                <span class="info-value">${goal}</span>
+                            </div>
+                            <button class="tag-remove" onclick="removeGoal(${index})" style="color: var(--error-red);">×</button>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        // Add Goal
+        async function addGoal() {
+            const input = document.getElementById('goalInput');
+            const goal = input.value.trim();
+
+            if (!goal) {
+                showToast('Please enter a learning goal', 'warning');
+                return;
+            }
+
+            try {
+                await api.post('/profile/learning-goals', { goal });
+                input.value = '';
+                showToast('Learning goal added!', 'success');
+                loadProfile();
+            } catch (error) {
+                showToast(error.message || 'Failed to add goal', 'error');
+            }
+        }
+
+        // Remove Goal
+        async function removeGoal(index) {
+            try {
+                await api.delete(`/profile/learning-goals/${index}`);
+                showToast('Goal removed', 'success');
+                loadProfile();
+            } catch (error) {
+                showToast('Failed to remove goal', 'error');
+            }
+        }
+
+        // Load Featured Badges
+        function loadFeaturedBadges(badges) {
+            const container = document.getElementById('featuredBadges');
+            
+            if (!badges || badges.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">🏆</div>
+                        <p class="empty-state-message">No badges earned yet. Keep contributing!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const featured = badges.filter(b => b.is_featured).slice(0, 6);
+            
+            container.innerHTML = featured.map(badge => `
+                <div class="badge-item">
+                    <div class="badge-icon">${badge.icon}</div>
+                    <div class="badge-name">${badge.name}</div>
+                    <div class="badge-date">${formatDate(badge.earned_at)}</div>
+                </div>
+            `).join('');
+        }
+        
+        
+
+        // Load Recent Posts
+        function loadRecentPosts(posts) {
+            const container = document.getElementById('recentPosts');
+            
+            if (!posts || posts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p class="empty-state-message">No posts yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = posts.slice(0, 3).map(post => `
+                <div class="post-card" onclick="window.location.href='/student/posts/${post.id}'">
+                    <div class="post-header">
+                        <span class="post-type-badge post-type-${post.post_type}">${post.post_type}</span>
+                         <button class=${post.is_pinned? "pinned": "pin"} onclick = "togglePinned(${post.id}, this)>${post.is_pinned? "Unpin Post": "Pin Post"}</button>
+                        <span style="color: var(--gray-500); font-size: 0.85rem;">${formatDate(post.posted_at)}</span>
+                    </div>
+                    <h3 class="post-title">${post.title}</h3>
+                    <div class="post-meta">
+                        <span class="post-meta-item">👁️ ${post.views || 0}</span>
+                        <span class="post-meta-item">❤️ ${post.likes_count}</span>
+                        <span class="post-meta-item">💬 ${post.comments_count}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load Active Threads
+        function loadActiveThreads(threads) {
+            const container = document.getElementById('activeThreads');
+            
+            if (!threads || threads.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray-500);">No active threads.</p>';
+                return;
+            }
+
+            container.innerHTML = threads.slice(0, 3).map(thread => `
+                <div class="info-item" style="cursor: pointer;" onclick="window.location.href='/student/threads/${thread.id}'">
+                    <div class="info-icon">🧵</div>
+                    <div class="info-content">
+                        <span class="info-value">${thread.title}</span>
+                        <span class="info-label">${thread.member_count} members · ${formatDate(thread.last_activity)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load Tab-Specific Data
+        async function loadTabData(tabName) {
+            switch(tabName) {
+                case 'posts':
+                    await loadAllPosts();
+                    break;
+                case 'activity':
+                    await loadActivityHeatmap();
+                    break;
+                case 'badges':
+                    await loadAllBadges();
+                    break;
+                case 'threads':
+                    await loadAllThreads();
+                    break;
+                case 'connections';
+                   await loadAllConnections();
+                   break;
+                case "studybuddies";
+                  await loadStudyBuddies();
+                  break;
+                case "weeklysummary";
+                  await loadWeeklySummary();
+                  break;
+            }
+        }
+    
+        let page = 1
+        let per_page = 20
+        let hasMore = true;
+        const btn = document.createElement("button");
+        btn.textContent = "Load More";
+        btn.classlist.add('connection-load')
+        btn.id = "load-connections"
+        const connectionsDiv = document.getElementById("connectionsDiv");
+        connectionDiv.after(btn)
+        document.getElementById("load-connections").addEventListener("click", async(e) => {
+          page += 1
+          await loadAllConnections();
+        }
+        async function loadAllConnections(){
+          if(!hasMore){
+            btn.remove();
+            return;
+          }
+          connectionsDiv.insertAdjacentHTML("beforeend", "<p id='loading-text'>Loading Connections...</p>)
+          try{
+            const response = await api.get("/connections/list/", {params: {page, per_page}
+            })
+            document.getElementById("loading-text").remove();
+            if(response.status === "success"){
+              const connections = response.data.connections
+              if(!connections || connections.length == 0){
+                hasMore = false;
+                btn.classList.toggle("hidden")
+                return;
+              }
+              
+              const html = connections.map(c => {
+                `<div class = "connection-box" onclick = "window.location.href = `/student/profile/${c.username}`">
+                  <img src = "url_for('${c.avatar}')" class="connection-image">
+                  <div class="connection-name">${c.name}</div>
+                  <button class="disconnect" onclick= "disconnect(`${c.id}`)">Disconnect</button>
+                  <h1 class="connection-department>${c.department}</h1>
+                  <h2 class="connection-classname">${c.class_name}</h2>
+                  <h2 class="connection-reputation-level>${c.connection-level}</h2>
+                  <div class="connection-bio">${c.bio}[:30]</div>
+                </div>
+              `).join('');
+              connectionDiv.insertAdjacentHTML("beforeend", html)
+              })
+          catch(error){
+            document.getElementById("loading-text")?.remove();
+            showToast("Error encountered while loading connections" "error")
+          }
+      }
+      
+
+          
+        async function disconnect(id){
+          try{
+            const response = await api.delete(`/connections/remove/${id}`)
+            if(response.status == "success"){
+              loadAllConnections();
+            }
+            else{
+              showToast(response.message, "error")
+            }
+          }
+          catch(error){
+            showToast(response.message, "error")
+          }
+        }
+        const buddiesDiv = document.getElementById("studybuddies-grid");
+        async function loadStudyBuddies(){
+          try{
+            buddiesDiv.innerHTML = "Loading StudyBuddies";
+            const response = await api.get("study-buddy/requests/accepted")
+            const buddies = response.data.accepted_requests.user;
+            if(!buddies || buddies.length == 0){
+              buddiesDiv.innerHTML = "No study buddies yet"
+              return;
+            }
+            buddiesDiv.innerHTML = buddies.map(b => 
+            `<div class = "buddies-box" onclick = "window.location.href = `/student/profile/${b.username}`">
+                  <img src = "url_for('${b.avatar}')" class="study-buddy-image">
+                  <div class="buddy-name">${b.name}</div>
+                  <h1 class="buddy-department>${b.department}</h1>
+                  <h2 class="buddy-reputation-level>${b.reputation_level}level}</h2>
+                  <h2 data-subjects = ${b.subjects} class="buddy-subjects"></h2>
+                  <div class="buddy-bio">${b.bio}[:30]</div>
+                </div>
+              `).join('');
+            )
+            
+          }
+        }
+  
+    
+        const buddySubjects = document.querySelectorAll(".buddy-subjects");
+        buddySubjects.forEach(bs => 
+        renderSubjects(bs))
+        
+        function renderSubjects(element){
+          const subjects = element.dataset.subjects;
+          if(!subjects){
+            element.textContent = "No Subjects";
+          }
+          else{
+            element.textContent = subjects.join('');
+          }
+        }
+
+        // Load All Posts
+        async function loadAllPosts() {
+            const container = document.getElementById('allPosts');
+            
+            try {
+                const response = await api.get("/posts/my-posts");
+                const posts = response.data.posts;
+
+                if (!posts || posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3 class="empty-state-title">No Posts Yet</h3>
+                            <p class="empty-state-message">Start sharing your knowledge!</p>
+                            <button class="btn btn-primary" onclick="window.location.href='/student/posts/create'">
+                                Create Post
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = posts.map(post => `
+                    <div class="post-card" onclick="window.location.href='/student/posts/${post.id}'">
+                        <div class="post-header">
+                        <button class=${post.is_pinned? "pinned": "pin"} onclick = "togglePinned(${post.id}, this)>${post.is_pinned? "Unpin Post": "Pin Post"}</button>
+                            <span class="post-type-badge post-type-${post.post_type}">${post.post_type}</span>
+                            <span style="color: var(--gray-500); font-size: 0.85rem;">${formatDate(post.posted_at)}</span>
+                        </div>
+                        <h3 class="post-title">${post.title}</h3>
+                        ${post.is_solved ? '<span style="color: var(--success-green); font-weight: 600;">✓ Solved</span>' : ''}
+                        <div class="post-meta">
+                            <span class="post-meta-item">👁️ ${post.views || 0}</span>
+                            <span class="post-meta-item">❤️ ${post.likes_count}</span>
+                            <span class="post-meta-item">💬 ${post.comments_count}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3 class="empty-state-title">Failed to Load Posts</h3>
+                        <button class="btn btn-primary" onclick="loadAllPosts()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function togglePinned(postId, button){
+          if(button.classList.includes("pin")){
+            pinPost(postId, button);
+          }
+          else{
+            unpinPost(postId, button);
+            
+          }
+        }
+        
+        async function pinPost(postId, button){
+          try{
+            const response = await api.post(`/posts/pin-post/${postId}`)
+            if (response.status === "success"){
+              showToast("Post pinned successfully", "success")
+              button.classList.toggle("pinned")
+              buttton.textContent = "Unpin Post";
+              loadProfile();
+            }
+            else{
+              showToast(response.messsage, "error");
+            }
+          catch(error){
+            showToast("Error encountered ehile trying to unpin  post");
+          }
+          }
+        }
+        
+        async function unpinPost(postId, button){
+          try{
+            const response = await api.post(`/posts/unpin-post/${postId}`)
+            if(response.status === "success"){
+              showToast("Post unpinned successfully", "success")
+              button.classList.toggle("pin")
+              buttton.textContent = "Pin Post";
+              loadProfile();
+            }
+            else{
+              showToast(response.messsage, "error");
+            }
+          catch(error){
+            showToast("Error encountered ehile trying to unpin post")
+              
+            }
+          }
+        }
+
+        // Load Activity Heatmap
+        async function loadActivityHeatmap() {
+            const container = document.getElementById('activityHeatmap');
+            
+            try {
+                const response = await api.get('/analytics/activity-heatmap', { days: 90 });
+                const heatmap = response.data.heatmap;
+
+                container.innerHTML = heatmap.map(day => `
+                    <div class="heatmap-cell" 
+                         data-level="${day.level}" 
+                         title="${day.date}: ${day.score} activity"
+                         style="background: ${getHeatmapColor(day.level)}">
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                container.innerHTML = '<p style="color: var(--error-red);">Failed to load activity data</p>';
+            }
+        }
+
+        function getHeatmapColor(level) {
+            const colors = {
+                0: 'var(--gray-200)',
+                1: '#9BE9A8',
+                2: '#40C463',
+                3: '#30A14E',
+                4: '#216E39'
+            };
+            return colors[level] || colors[0];
+        }
+
+        // Load All Badges
+        async function loadAllBadges() {
+            const container = document.getElementById('allBadges');
+            
+            try {
+                const response = await api.get('/badges/my-badges');
+                const badges = response.data.badges;
+
+                if (!badges || badges.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <div class="empty-state-icon">🏆</div>
+                            <h3 class="empty-state-title">No Badges Yet</h3>
+                            <p class="empty-state-message">Earn badges by being active and helpful!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = badges.map(badge => `
+                    <div class="badge-item">
+                        <div class="badge-icon">${badge.icon}</div>
+                        <div class="badge-name">${badge.name}</div>
+                        <div class="badge-date">${formatDate(badge.earned_at)}</div>
+                        <div style="margin-top: 8px; font-size: 0.85rem; color: var(--gray-500);">
+                            ${badge.description}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                container.innerHTML = '<p style="color: var(--error-red); text-align: center;">Failed to load badges</p>';
+            }
+        }
+
+        // Load All Threads
+        async function loadAllThreads() {
+            const container = document.getElementById('allThreads');
+            
+            try {
+                const response = await api.get('/threads/my-threads');
+                const threads = response.data.threads;
+
+                if (!threads || threads.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🧵</div>
+                            <h3 class="empty-state-title">No Threads Yet</h3>
+                            <p class="empty-state-message">Join or create study threads!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = threads.map(thread => `
+                    <div class="post-card" onclick="window.location.href='/student/threads/${thread.id}'">
+                        <div class="post-header">
+                            ${thread.is_creator ? '<span class="post-type-badge" style="background: var(--success-green);">Creator</span>' : ''}
+                            ${thread.unread_count > 0 ? `<span class="post-type-badge" style="background: var(--error-red);">${thread.unread_count} new</span>` : ''}
+                        </div>
+                        <h3 class="post-title">${thread.title}</h3>
+                        <div class="post-meta">
+                            <span class="post-meta-item">👥 ${thread.member_count} members</span>
+                            <span class="post-meta-item">💬 ${thread.message_count} messages</span>
+                            <span class="post-meta-item">🕒 ${formatDate(thread.last_activity)}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h3 class="empty-state-title">Failed to Load Threads</h3>
+                    </div>
+                `;
+            }
+        }
+        
+        document.getElementById('avatar-input').addEventListener("click", async function(e) {
+          try{
+            const response = await api.delete("/profile/avatar")
+            if(reponse.status === "success"){
+              showToast("Profile picture removed succesfully");
+            }
+          }
+          catch(error){
+            showToast("An error was encountered while trying to remove profile picture");
+          }
+        })
+
+        // Avatar Upload
+        document.getElementById('avatarInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image too large. Maximum size is 5MB.', 'error');
+                return;
+            }
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload an image file.', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('avatar', file);
+
+                const response = await api.post('/profile/avatar/upload', formData, true);
+                
+                document.getElementById('profileAvatar').src = response.data.avatar_url;
+                showToast('Profile picture updated!', 'success');
+                document.getElementById("avatar-remove").classList.toggle('hidden');
+
+            } catch (error) {
+                showToast('Failed to upload avatar', 'error');
+            }
+        });
+
+        // Edit Profile Modal
+        function openEditModal() {
+            const modal = new Modal({
+                title: '✏️ Edit Profile',
+                size: 'medium',
+                content: `
+                    <div style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Name</label>
+                            <input type="text" class="form-input" id="editName" value="${profileData.user.name}">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Bio</label>
+                            <textarea class="form-input" id="editBio" rows="4" 
+                                      placeholder="Tell us about yourself...">${profileData.user.bio || ''}</textarea>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Department</label>
+                            <select class="form-input" id="editDepartment">
+                                <option value="${profileData.user.department}">${profileData.user.department}</option>
+                            </select>
+                        </div>
+                    </div>
+                `,
+                buttons: [
+                    {
+                        text: 'Cancel',
+                        class: 'btn-secondary',
+                        action: 'cancel'
+                    },
+                    {
+                        text: 'Save Changes',
+                        class: 'btn-primary',
+                        action: 'save',
+                        onClick: async () => {
+                            const name = document.getElementById('editName').value;
+                            const bio = document.getElementById('editBio').value;
+                            const department = document.getElementById('editDepartment').value;
+
+                            try {
+                                await api.patch('/profile/update', { name, bio, department });
+                                showToast('Profile updated!', 'success');
+                                loadProfile();
+                                return true; // Close modal
+                            } catch (error) {
+                                showToast('Failed to update profile', 'error');
+                                return false; // Keep modal open
+                            }
+                        }
+                    }
+                ]
+            }).open();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is authenticated
+            if (!isAuthenticated()) {
+                window.location.href = '/student/login';
+                return;
+            }
+
+            // Load profile data
+            loadProfile();
+        });
+    </script>
+</body>
+</html>
+                
+ 
+                            
